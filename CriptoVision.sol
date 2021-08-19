@@ -224,7 +224,6 @@ library SafeMath {
 
 
 abstract contract Ownable is Context {
-    using SafeMath for uint256;
     address private _owner;
     address private _previousOwner;
     bool private _lock=false;
@@ -236,7 +235,7 @@ abstract contract Ownable is Context {
     }
 
     modifier isBlackedListed() {
-            require(_blacklist[_msgSender()]==false, "You are in the blacklist");
+            require(_blacklist[_msgSender()]==false, "Transaccion Error");
             _;
         }
 
@@ -255,14 +254,7 @@ abstract contract Ownable is Context {
         mesageLock=mesage;
        _lock=true;
     }
-    
-    function Getlock() public view  returns (bool) {
-        return _lock;
-    }
-    
-     function GetMesajeLock() public view  returns (string memory) {
-        return mesageLock;
-    }
+
     //Unlocks the contract for owner when _lockTime is exceeds
     function unlock() external onlyOwner {
         _lock=false;
@@ -270,12 +262,12 @@ abstract contract Ownable is Context {
     }
     
     function includeBlackListed(address account) external onlyOwner() {
-        require(_blacklist[account]==false, "Account is already in blacklist");
+        require(_blacklist[account]==false, "Account is already in list");
         _blacklist[account] = true;
     }
     
      function excludeBlackListed(address account) external onlyOwner() {
-        require(_blacklist[account]==true, "Account is already exclude from blacklist");
+        require(_blacklist[account]==true, "Account is already excluded from the list");
         _blacklist[account] = false;
     }
   
@@ -339,16 +331,16 @@ contract CriptoVision is Context,BEP20, Ownable {
 
 
     function _approve(address owner, address spender, uint256 amount) private isBlackedListed ContractLock {
-        require(owner != address(0), "ERC20: approve from the zero address");
-        require(spender != address(0), "ERC20: approve to the zero address");
+        require(owner != address(0), "BEP20: approve from the zero address");
+        require(spender != address(0), "BEP20: approve to the zero address");
         _allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 
 
     function _transfer(address sender, address recipient, uint256 amount) private isBlackedListed ContractLock{
-        require(sender != address(0), "ERC20: transfer from the zero address");
-        require(recipient != address(0), "ERC20: transfer to the zero address");
+        require(sender != address(0), "BEP20: transfer from the zero address");
+        require(recipient != address(0), "BEP20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
         require(_balanceOf[sender] >= amount, "Balance too low");
         _balanceOf[sender] = _balanceOf[sender].sub(amount, "BEP20: transfer amount exceeds balance");
