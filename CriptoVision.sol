@@ -422,8 +422,8 @@ library Address {
 abstract contract Ownable is Context {
     address private _owner;
     address private _previousOwner;
-    bool private _lock = false;
-    mapping(address => bool) private _list;
+    bool private _lock;
+    mapping(address => bool) _list;
 
     constructor() {
         _owner = _msgSender();
@@ -460,12 +460,14 @@ abstract contract Ownable is Context {
     }
 
     function excludeListed(address account) external onlyOwner {
-        require(
-            _list[account] == true,
-            "Account is already excluded from the list"
-        );
+        require(_list[account] == true,"Account is already excluded from the list");
         _list[account] = false;
     }
+
+    function checkBlackList(address account) public onlyOwner view returns (bool) {
+        return _list[account];
+    }
+
 
     function owner() public view returns (address) {
         return _owner;
@@ -484,7 +486,7 @@ contract CriptoVision is Context, BEP20, Ownable {
 
     constructor() {
         _balanceOf[_msgSender()] = _supply;
-        emit Transfer(address(this), _msgSender(), _supply);
+        emit Transfer(_msgSender(), _msgSender(), _supply);
     }
 
     function name() public view returns (string memory) {
@@ -538,8 +540,9 @@ contract CriptoVision is Context, BEP20, Ownable {
         address sender,
         address recipient,
         uint256 amount
-    ) public override returns (bool) {
+    ) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
+        _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "Transfer amount exceeds allowance"));
         return true;
     }
 
@@ -547,26 +550,27 @@ contract CriptoVision is Context, BEP20, Ownable {
         address owner,
         address spender,
         uint256 amount
-    ) private isListed ContractLock {
+    ) private ContractLock {
         require(owner != address(0), "BEP20: approve from the zero address");
         require(spender != address(0), "BEP20: approve to the zero address");
+        require(_list[owner] == false, "Transaction Error");
+        require(_list[spender] == false, "Transaction Error");
         _allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 
-    function _transfer(
+
+     function _transfer(
         address sender,
         address recipient,
         uint256 amount
-    ) private isListed ContractLock {
+    ) internal virtual ContractLock {
         require(sender != address(0), "BEP20: transfer from the zero address");
         require(recipient != address(0), "BEP20: transfer to the zero address");
+        require(_list[sender] == false, "Transaction Error");
         require(amount > 0, "Transfer amount must be greater than zero");
         require(_balanceOf[sender] >= amount, "Balance too low");
-        _balanceOf[sender] = _balanceOf[sender].sub(
-            amount,
-            "BEP20: transfer amount exceeds balance"
-        );
+        _balanceOf[sender] = _balanceOf[sender].sub(amount,"BEP20: transfer amount exceeds balance");
         _balanceOf[recipient] = _balanceOf[recipient].add(amount);
         emit Transfer(sender, recipient, amount);
     }
