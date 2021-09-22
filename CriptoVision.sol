@@ -479,7 +479,7 @@ contract CriptoVision is Context, BEP20, Ownable {
     using Address for address;
     mapping(address => uint256) private _balanceOf;
     mapping(address => mapping(address => uint256)) private _allowances;
-    string private _name = "Cripto Vision";
+    string private _name = "CRIPTOVISION";
     string private _symbol = "VSION";
     uint8 private _decimals = 8;
     uint256 private _supply = 1000000000 * 10**_decimals;
